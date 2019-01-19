@@ -3,10 +3,14 @@ require('./config/config');
 const _ = require('lodash');
 const express = require('express');
 const bodyParser = require('body-parser');
+const moment = require('moment');
 const { ObjectID } = require('mongodb');
+const randomstring = require('randomstring');
+
 
 var { mongoose } = require('./db/mongoose.js');
 var { User } = require('./models/user');
+var { Event } = require('./models/event');
 
 var { authenticate } = require('./middleware/authenticate');
 
@@ -15,8 +19,44 @@ const port = process.env.PORT;
 
 app.use(bodyParser.json());
 
-app.get('/', (req, res) => {
-  res.send(`Hello world ${port}`);
+app.post('/events/join', authenticate, async (req, res) => {
+  
+  try {
+    var event = await Event.findByRoomKey(req.body.room_key);
+  
+    await event.addMember(req.user._id);
+    
+    res.status(200).send({
+      event_id: event._id,
+      room_key: event.key
+    });  
+    
+  } catch (e) {
+    res.status(403).send(e.message);
+  }
+  
+});
+
+app.post('/events', authenticate, async (req, res) => {
+  var body = _.pick(req.body, ['title', 'time', 'latitude', 'longitude', 'duration']);
+  body['members'] = [req.user._id];
+  body['key'] = randomstring.generate({
+    length: 5,
+    charset: 'alphabetic',
+    capitalization: 'uppercase'
+  });
+
+  try {
+    var eventObject = await Event.createEvent(body, req.user._id);
+    
+    res.status(200).send({
+      event_id: eventObject._id,
+      room_key: eventObject.key
+    });
+  } catch (e) {
+    console.log(e);
+    res.status(400).send(e.message);
+  }
 });
 
 // Create User - POST /users
