@@ -7,7 +7,6 @@ const moment = require('moment');
 const { ObjectID } = require('mongodb');
 const randomstring = require('randomstring');
 
-
 var { mongoose } = require('./db/mongoose.js');
 var { User } = require('./models/user');
 var { Event } = require('./models/event');
@@ -19,17 +18,17 @@ const port = process.env.PORT;
 
 app.use(bodyParser.json());
 
-app.get('/events', authenticate, async (req, res) => {
 
-  try {
-    var events = await Event.findByMember(req.user._id)
+
+app.get('/events', authenticate, async (req, res) => {
+  try{
+    var events = await Event.findByMember(req.user._id);
+    events = events.map((event) => event.toObject());
     
-    res.status(200).send(events);  
-  } catch (e) {
+    res.status(200).send(events);
+  }catch(e){
     res.status(403).send(e);
   }
-  
-
 });
 
 app.post('/events/join', authenticate, async (req, res) => {
@@ -109,8 +108,6 @@ app.post('/users', async (req, res) => {
 app.post('/users/login', async (req, res) => {
   var body = _.pick(req.body, ['email', 'password']);
   try {
-    console.log(body.email, body.password);
-    
     const user = await User.findByCredentials(body.email, body.password);
     const token = await user.generateAuthToken()
 
@@ -133,6 +130,17 @@ app.delete('/users/me/token', authenticate, async (req, res) => {
 // Read user - GET /users/me
 app.get('/users/me', authenticate, (req, res) => {
   res.send(req.user);
+});
+
+// Read user - GET /users/:id
+app.get('/users/:id', authenticate, async (req, res) => {
+try {  
+  var user = await User.findById(req.params.id);
+  res.status(200).send(user)
+} catch (e) {
+  res.status(403).send(e.message)
+}
+
 });
 
 app.listen(port, () => {
