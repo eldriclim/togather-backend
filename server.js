@@ -20,21 +20,39 @@ const port = process.env.PORT;
 app.use(bodyParser.json());
 
 app.post('/events/join', authenticate, async (req, res) => {
-  
+
   try {
     var event = await Event.findByRoomKey(req.body.room_key);
-  
+
     await event.addMember(req.user._id);
-    
+
     res.status(200).send({
       event_id: event._id,
       room_key: event.key
-    });  
-    
+    });
+
   } catch (e) {
     res.status(403).send(e.message);
   }
-  
+
+});
+
+app.post('/events/leave', authenticate, async (req, res) => {
+
+  try {
+    var event = await Event.findByRoomKey(req.body.room_key);
+
+    await event.leave(req.user._id);
+
+    res.status(200).send({
+      event_id: event._id,
+      room_key: event.key
+    });
+
+  } catch (e) {
+    res.status(403).send(e.message);
+  }
+
 });
 
 app.post('/events', authenticate, async (req, res) => {
@@ -48,7 +66,7 @@ app.post('/events', authenticate, async (req, res) => {
 
   try {
     var eventObject = await Event.createEvent(body, req.user._id);
-    
+
     res.status(200).send({
       event_id: eventObject._id,
       room_key: eventObject.key

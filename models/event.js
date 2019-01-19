@@ -57,11 +57,11 @@ EventSchema.methods.addMember = async function (userID) {
   var event = this;
 
   try {
-    var memberExist = event.members.some(function (member) {
+    var memberExist = event.members.some((member) => {
       return member.equals(userID);
-  });
-    
-    if (memberExist){
+    });
+
+    if (memberExist) {
       throw new Error('User already in Event');
     }
 
@@ -71,6 +71,35 @@ EventSchema.methods.addMember = async function (userID) {
     var user = await User.findById(userID);
     user.events = user.events.concat(event._id);
     await user.save();
+
+  } catch (e) {
+    throw new Error(e);
+  }
+
+}
+
+EventSchema.methods.leave = async function (userID) {
+  var event = this;
+
+  try {
+    var memberExist = event.members.some((member) => {
+      return member.equals(userID);
+    });
+
+    if (!memberExist) {
+      throw new Error('User is not an Event member');
+    }
+
+    event.members = event.members.filter((member) => !member.equals(userID));
+    await event.save()
+
+    var user = await User.findById(userID);
+    user.events = user.events.filter((event) => !event.equals(event._id));
+    await user.save();
+
+    if (event.members.length == 0) {
+      await Event.deleteOne({ _id: event._id });
+    }
 
   } catch (e) {
     throw new Error(e);
