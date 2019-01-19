@@ -19,6 +19,19 @@ const port = process.env.PORT;
 
 app.use(bodyParser.json());
 
+app.get('/events', authenticate, async (req, res) => {
+
+  try {
+    var events = await Event.findByMember(req.user._id)
+    
+    res.status(200).send(events);  
+  } catch (e) {
+    res.status(403).send(e);
+  }
+  
+
+});
+
 app.post('/events/join', authenticate, async (req, res) => {
 
   try {
@@ -96,6 +109,8 @@ app.post('/users', async (req, res) => {
 app.post('/users/login', async (req, res) => {
   var body = _.pick(req.body, ['email', 'password']);
   try {
+    console.log(body.email, body.password);
+    
     const user = await User.findByCredentials(body.email, body.password);
     const token = await user.generateAuthToken()
 

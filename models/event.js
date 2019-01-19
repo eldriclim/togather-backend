@@ -111,6 +111,10 @@ EventSchema.statics.findByRoomKey = function (key) {
   return Event.findOne({ key });
 };
 
+EventSchema.statics.findByMember = function (userID) {
+  return Event.find({ members: userID });
+};
+
 EventSchema.statics.createEvent = async function (body, userID) {
   try {
     var event = new Event(body);
