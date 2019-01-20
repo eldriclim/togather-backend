@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const moment = require('moment');
 const { ObjectID } = require('mongodb');
 const randomstring = require('randomstring');
+const socketIO = require('socket.io');
 
 var { mongoose } = require('./db/mongoose.js');
 var { User } = require('./models/user');
@@ -14,13 +15,14 @@ var { Event } = require('./models/event');
 var { authenticate } = require('./middleware/authenticate');
 
 var app = express();
+var io = socketIO(server);
 const port = process.env.PORT;
 
 app.use(bodyParser.json());
 
-
-
 app.get('/events', authenticate, async (req, res) => {
+  console.log(req);
+  
   try{
     var events = await Event.findByMember(req.user._id);
     events = events.map((event) => event.toObject());
