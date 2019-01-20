@@ -19,18 +19,63 @@ var app = express();
 var server = http.createServer(app);
 var io = socketIO(server);
 const port = process.env.PORT;
+var date = moment();
 
 app.use(bodyParser.json());
 
+app.use(express.static('./public'));
+
+io.on('connection', (socket) => {
+  let token;
+
+  socket.on('auth', async (data, callback) => {
+    try {
+      const user = await User.findByToken(data.token);
+
+      if (!user) {
+        return callback('Authentication failed')
+      }
+
+      token = data.token;
+
+      const event = await Event.findByRoomKey(data.room);
+
+      if (!event) {
+        return callback('No such room.')
+      }
+
+      if (moment(event.time).format('YYYYMMDD') < date.format('YYYYMMDD')) {
+        console.log('Event already over');
+
+        return callback('Event already over')
+      }
+      
+      if(!event.members.some((member) => member.equals(user._id))){
+        return callback('User not in event.');
+      }
+      
+      socket.join(data.room);
+      var count = io.sockets.adapter.rooms[data.room].length
+      console.log(`${count}/${event.members.length} online.`);
+      
+      io.to(data.room).emit('testPrint', `${count}/${event.members.length} online.`)
+      
+
+    } catch (e) {
+      callback(e);
+    }
+  });
+
+});
+
 app.get('/events', authenticate, async (req, res) => {
-  console.log(req);
-  
-  try{
+
+  try {
     var events = await Event.findByMember(req.user._id);
     events = events.map((event) => event.toObject());
-    
+
     res.status(200).send(events);
-  }catch(e){
+  } catch (e) {
     res.status(403).send(e);
   }
 });
@@ -138,16 +183,16 @@ app.get('/users/me', authenticate, (req, res) => {
 
 // Read user - GET /users/:id
 app.get('/users/:id', authenticate, async (req, res) => {
-try {  
-  var user = await User.findById(req.params.id);
-  res.status(200).send(user)
-} catch (e) {
-  res.status(403).send(e.message)
-}
+  try {
+    var user = await User.findById(req.params.id);
+    res.status(200).send(user)
+  } catch (e) {
+    res.status(403).send(e.message)
+  }
 
 });
 
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`Started on port ${port}`);
 });
 
