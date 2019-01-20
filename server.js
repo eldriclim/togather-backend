@@ -15,6 +15,7 @@ var { Event } = require('./models/event');
 var { authenticate } = require('./middleware/authenticate');
 
 var app = express();
+var server = http.createServer(app);
 var io = socketIO(server);
 const port = process.env.PORT;
 
