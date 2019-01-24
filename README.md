@@ -42,7 +42,7 @@ Libraries used:
 
 ### POST /users
 
-Create a user with incoming JSON data.
+Create a user with incoming JSON data. New authentication token is created.
 
 + Request
 
@@ -60,7 +60,7 @@ Create a user with incoming JSON data.
 
 ### POST /users/login
 
-Login user
+Logs in user. New authentication token is created.
 
 + Request
 
@@ -98,7 +98,7 @@ Get current user details with user's list of events. To include `x-auth` header.
 
 ### GET /users/:id
 
-Get user details. To include `x-auth` header.
+Get user public details. To include `x-auth` header.
 
 + Parameter
     + `id` of user
