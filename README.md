@@ -2,7 +2,7 @@
 
 Togather is a mobile application that encourages social interaction between people during gatherings.
 
-This repo serves as the backend for [Togather](https://github.com/cjianhui/togather/).
+This repo serves as the backend for [Togather](https://github.com/cjianhui/togather/), powered by Express, Socket.io and MongoDB.
 
 ## Requirements
 
