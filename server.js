@@ -178,7 +178,17 @@ app.delete('/users/me/token', authenticate, async (req, res) => {
 
 // Read user - GET /users/me
 app.get('/users/me', authenticate, (req, res) => {
-  res.send(req.user);
+  var me = req.user;
+  var events = req.user.events;
+  
+  
+  res.send({
+    _id: me._id,
+    email: me.email,
+    firstName: me.firstName,
+    lastName: me.lastName,
+    events
+  });
 });
 
 // Read user - GET /users/:id
