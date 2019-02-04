@@ -55,7 +55,7 @@ EventSchema.plugin(uniqueValidator);
 
 EventSchema.methods.addMember = async function (userID) {
   var event = this;
-
+  
   try {
     var memberExist = event.members.some((member) => {
       return member.equals(userID);
